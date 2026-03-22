@@ -3,88 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Analytik</title>
     <style>
-        :root { --n-c:#00f2ff; --n-p:#bc13fe; --n-g:#39ff14; --n-y:#ffd000; --bg:#02050a; }
+        :root { --neon: #00f2ff; --neon-p: #bc13fe; --bg: #02050a; }
+        
         body { 
-            background: var(--bg); color:white; font-family: 'Courier New', Courier, monospace; margin:0; padding-bottom:110px; 
-            background-image: radial-gradient(circle at top left, rgba(188,19,254,0.06) 0%, transparent 40%), linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px);
-            background-size: 100% 100%, 20px 20px;
+            background: var(--bg); color:white; font-family: sans-serif; margin:0; padding-bottom:110px; 
+            background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
+
         .view { display:none; padding:15px; max-width:480px; margin:auto; animation: fadeIn 0.3s; }
         .active { display:block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .ai-analytik-box { background: rgba(188,19,254,0.03); border: 1px solid var(--n-p); border-radius: 12px; padding: 15px; margin-top: 15px; display: flex; align-items: center; gap: 15px; }
-        .ai-avatar { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--n-p); animation: pulseAi 2s infinite; }
-        @keyframes pulseAi { 0% { box-shadow: 0 0 0 0 rgba(188,19,254,0.4); } 70% { box-shadow: 0 0 0 10px rgba(188,19,254,0); } 100% { box-shadow: 0 0 0 0 rgba(188,19,254,0); } }
-        .league-header { background:rgba(255,255,255,0.07); padding:12px; border-radius:12px; margin-top:15px; border-left:4px solid var(--n-p); font-size:11px; font-weight:bold; }
-        .card { padding: 16px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        
+        /* DATE SCROLLER */
+        .date-scroller { display:flex; gap:10px; overflow-x:auto; padding:10px 0; border-bottom:1px solid #222; }
+        .date-item { padding:10px 15px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:11px; }
+        .date-item.sel { border:1px solid var(--neon); color:var(--neon); }
+        
+        /* ZOZNAM ZÁPASOV */
+        .league { color: var(--neon); font-size: 11px; margin: 15px 0 5px; font-weight: bold; }
+        .match-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .logo { width:22px; height:22px; vertical-align:middle; margin-right:8px; }
-        .score-v { color:var(--n-c); font-weight:bold; font-size:18px; text-shadow: 0 0 5px var(--n-c); }
-        .bottom-nav { position:fixed; bottom:0; width:100%; height:90px; background:rgba(0,0,0,0.9); display:flex; border-top:1px solid #222; backdrop-filter:blur(15px); z-index:1000; }
-        .nav-i { flex:1; text-align:center; padding-top:18px; font-size:10px; color:#444; cursor:pointer; }
-        .nav-i.active { color:var(--n-c); }
+        .score { color:var(--neon); font-weight:bold; font-size:18px; text-shadow: 0 0 5px var(--neon); }
+
+        /* TIKETY & TIPY */
+        .ticket-box { border: 1px solid var(--neon-p); background: rgba(188,19,254,0.03); padding: 15px; border-radius: 15px; }
+        .prem { color: var(--neon-p); font-size: 11px; font-weight: bold; margin-bottom: 5px; }
+        
+        /* NAVIGÁCIA */
+        .bottom-nav { position:fixed; bottom:0; width:100%; height:90px; background:rgba(0,0,0,0.9); display:flex; border-top:1px solid #222; }
+        .nav-i { flex:1; text-align:center; padding-top:18px; font-size:10px; color:#444; }
+        .nav-i.active { color:var(--neon); }
         .nav-i span { display:block; font-size:24px; }
-        .stat-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px; }
-        .stat-box { background:rgba(255,255,255,0.04); padding:15px; border-radius:15px; text-align:center; border:1px solid #222; }
-        .stat-v { display:block; font-size:22px; font-weight:bold; }
     </style>
 </head>
 <body>
     <div id="v-main" class="view active">
-        <h2 style="color:#555;">🏟️ NEURAL NET</h2>
-        <div class="ai-analytik-box">
-            <div class="ai-avatar"></div>
-            <div class="ai-sprava"><b style="color:var(--n-p); display:block;">AI ANALYTIK</b> Skenujem zápasy...</div>
-        </div>
+        <h2>🏟️ ZÁPASY</h2>
+        <div class="date-scroller" id="d-scroll"></div>
         <div id="content-area"></div>
     </div>
 
-    <div id="v-detail" class="view">
-        <div id="det-content"></div>
+    <div id="v-ticket" class="view">
+        <h2 style="color:var(--neon-p)">🎫 NEURAL TICKETS</h2>
+        <div class="ticket-box">
+            <div class="prem">PREMIUM AKO</div>
+            Zápas A: Góly 2.5+<br>
+            Zápas B: BTTS
+        </div>
+    </div>
+
+    <div id="v-tips" class="view">
+        <h2>🧠 TIPY</h2>
+        <div id="tips-area"></div>
+    </div>
+
+    <div id="v-stats" class="view">
+        <h2>📈 ŠTATISTIKA</h2>
+        <div style="font-size:70px; color:var(--neon); margin-top:40px; text-align:center;">84%</div>
     </div>
 
     <div class="bottom-nav">
         <div class="nav-i active" onclick="sw('v-main')"><span>🏟️</span>ZÁPASY</div>
+        <div class="nav-i" onclick="sw('v-ticket')"><span>🎫</span>TIKET</div>
         <div class="nav-i" onclick="sw('v-tips')"><span>🧠</span>TIPY</div>
-        <div class="nav-i" onclick="sw('v-ticket')"><span>🎫</span>TIKETY</div>
+        <div class="nav-i" onclick="sw('v-stats')"><span>📈</span>ŠTATISTIKA</div>
     </div>
 
     <script>
+        // Funkcia na prepínanie sekcií
         function sw(v) {
             document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
             document.getElementById(v).classList.add('active');
         }
 
+        // Funkcia, ktorá stiahne čisté dáta a zobrazí ich v TOMTO dizajne
         async function loadData() {
             try {
-                const res = await fetch('data.json?v=' + new Date().getTime());
+                // Robot uloží dáta do data.json, my si ich tu vyzdvihneme
+                const res = await fetch('data.json?v=' + Date.now());
                 const data = await res.json();
                 const area = document.getElementById('content-area');
                 area.innerHTML = '';
                 
+                // Zobrazíme dáta v tvojom dizajne
                 data.forEach(z => {
                     area.innerHTML += `
-                        <div class="card" onclick='openDet(${JSON.stringify(z)})'>
+                        <div class="match-card">
                             <div>
                                 <img src="${z.h_l}" class="logo">${z.h}<br>
                                 <img src="${z.a_l}" class="logo">${z.a}
                             </div>
-                            <div class="score-v">${z.s}</div>
+                            <div class="score">${z.s}</div>
                         </div>`;
                 });
-            } catch(e) { console.log("Čakám na data.json..."); }
+            } catch(e) { console.log("Čakám na dáta od robota..."); }
         }
 
-        function openDet(z) {
-            sw('v-detail');
-            document.getElementById('det-content').innerHTML = `
-                <div onclick="sw('v-main')" style="color:var(--n-c); margin-bottom:20px; cursor:pointer;">← SPÄŤ</div>
-                <h3>${z.h} vs ${z.a}</h3>
-                <div class="stat-grid">
-                    <div class="stat-box"><span class="stat-v" style="color:var(--n-g)">${z.p15}%</span><small>Over 1.5</small></div>
-                    <div class="stat-box"><span class="stat-v" style="color:var(--n-p)">${z.p25}%</span><small>Over 2.5</small></div>
-                </div>`;
-        }
+        // Spustíme načítanie dát
         loadData();
     </script>
 </body>
