@@ -42,6 +42,12 @@
         "l": "Eredivisie"
     },
     {
+        "h": "Atalanta",
+        "a": "Verona",
+        "s": "14:00",
+        "l": "Serie A"
+    },
+    {
         "h": "Olympique Lyon",
         "a": "Monaco",
         "s": "14:00",
@@ -54,20 +60,14 @@
         "l": "Serie A"
     },
     {
-        "h": "Atalanta",
-        "a": "Verona",
-        "s": "14:00",
-        "l": "Serie A"
-    },
-    {
-        "h": "Tottenham",
-        "a": "Nottingham",
+        "h": "Aston Villa",
+        "a": "West Ham",
         "s": "14:15",
         "l": "Premier League"
     },
     {
-        "h": "Aston Villa",
-        "a": "West Ham",
+        "h": "Tottenham",
+        "a": "Nottingham",
         "s": "14:15",
         "l": "Premier League"
     },
@@ -150,12 +150,6 @@
         "l": "Bundesliga"
     },
     {
-        "h": "Clube do Remo",
-        "a": "Bahia",
-        "s": "19:00",
-        "l": "Campeonato Brasileiro S\u00e9rie A"
-    },
-    {
         "h": "Paranaense",
         "a": "Coritiba",
         "s": "19:00",
@@ -170,6 +164,12 @@
     {
         "h": "Cruzeiro",
         "a": "Santos",
+        "s": "19:00",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Clube do Remo",
+        "a": "Bahia",
         "s": "19:00",
         "l": "Campeonato Brasileiro S\u00e9rie A"
     },
