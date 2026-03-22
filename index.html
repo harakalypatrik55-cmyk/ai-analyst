@@ -2,142 +2,58 @@
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neural Betting AI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Scanner</title>
     <style>
-        :root { --neon-b: #00f2ff; --neon-p: #ff00ff; --bg: #05000f; --card-bg: rgba(20, 0, 40, 0.8); }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
-        
-        /* Pozadie s mriežkou */
-        .grid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; z-index: -1; }
-
-        .date-bar { display: flex; overflow-x: auto; padding: 15px; gap: 10px; sticky; top: 0; background: var(--bg); z-index: 100; scrollbar-width: none; }
-        .date-item { min-width: 70px; padding: 10px; text-align: center; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .date-item.active { border-color: var(--neon-b); background: rgba(0, 242, 255, 0.1); box-shadow: 0 0 10px var(--neon-b); }
-
-        .container { padding: 0 15px; }
-        .liga-title { color: var(--neon-p); font-size: 11px; font-weight: bold; margin: 20px 0 10px 5px; text-transform: uppercase; }
-        
-        .match-card { background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .team-row { display: flex; align-items: center; margin: 4px 0; }
-        .logo-s { width: 22px; height: 22px; margin-right: 10px; object-fit: contain; }
-
-        /* Modálne okno (Štatistiky) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; overflow-y: auto; }
-        .modal-content { padding: 20px; padding-bottom: 100px; }
-        .close-btn { float: right; font-size: 24px; color: var(--neon-b); }
-
-        /* Tabuľka kurzov */
-        .odds-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .odd-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid rgba(0,242,255,0.2); }
-        .odd-item span { display: block; font-size: 10px; opacity: 0.6; }
-        .odd-item b { color: var(--neon-b); font-size: 14px; }
-
-        /* GPT Analytik sekcia */
-        .gpt-box { background: rgba(255, 0, 255, 0.05); border: 1px solid var(--neon-p); padding: 15px; border-radius: 15px; margin-top: 20px; box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
-        .gpt-header { color: var(--neon-p); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(5,0,15,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(0,242,255,0.2); }
-        .nav-item { text-align: center; color: #444; font-size: 10px; }
-        .nav-item.active { color: var(--neon-b); }
-        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
+        :root { --n-c:#00f2ff; --n-p:#bc13fe; --n-g:#39ff14; --bg:#02050a; }
+        body { background:var(--bg); color:white; font-family:sans-serif; margin:0; padding-bottom:100px; }
+        .view { padding:15px; max-width:480px; margin:auto; }
+        .date-scroller { display:flex; gap:10px; overflow-x:auto; padding:15px 0; border-bottom:1px solid #222; }
+        .date-item { padding:8px 12px; background:#111; border-radius:8px; font-size:12px; cursor:pointer; }
+        .date-item.sel { border:1px solid var(--n-c); color:var(--n-c); }
+        .league { background:rgba(255,255,255,0.05); padding:10px; margin-top:15px; border-left:4px solid var(--n-p); font-size:12px; font-weight:bold; }
+        .card { display:flex; justify-content:space-between; padding:15px 5px; border-bottom:1px solid #111; }
+        .score { color:var(--n-c); font-weight:bold; }
+        .nav { position:fixed; bottom:0; width:100%; height:70px; background:rgba(0,0,0,0.9); display:flex; border-top:1px solid #222; }
+        .nav-i { flex:1; text-align:center; padding-top:15px; color:#555; font-size:10px; }
+        .nav-i.active { color:var(--n-c); }
     </style>
 </head>
 <body>
-    <div class="grid-bg"></div>
-    <div id="date-nav" class="date-bar"></div>
-    <div id="main-list" class="container"></div>
-
-    <div id="statModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <div id="modal-teams" style="text-align:center; margin-top:20px;"></div>
-            
-            <div class="odds-grid">
-                <div class="odd-item"><span>Over 1.5</span><b id="o15">-</b></div>
-                <div class="odd-item"><span>Over 2.5</span><b id="o25">-</b></div>
-                <div class="odd-item"><span>BTTS</span><b id="btts">-</b></div>
-                <div class="odd-item"><span>Karty</span><b id="cards">-</b></div>
-                <div class="odd-item"><span>Rohy</span><b id="corners">-</b></div>
-                <div class="odd-item"><span>Výhra</span><b id="win-ai">-</b></div>
-            </div>
-
-            <div class="gpt-box">
-                <div class="gpt-header"><i class="fa-solid fa-robot"></i> GPT ANALYTIK</div>
-                <div id="gpt-text" style="font-size: 13px; line-height: 1.5; opacity: 0.9;">
-                    Analyzujem posledné zápasy a formu tímov...
-                </div>
-            </div>
-        </div>
+    <div class="view">
+        <h2 style="text-align:center; letter-spacing:3px; color:#444;">NEURAL ANALYST</h2>
+        <div class="date-scroller" id="d-scroll"></div>
+        <div id="content"></div>
     </div>
-
-    <nav class="nav-bar">
-        <div class="nav-item active"><i class="fa-solid fa-futbal"></i>ZÁPASY</div>
-        <div class="nav-item"><i class="fa-solid fa-ticket"></i>TIKET</div>
-        <div class="nav-item"><i class="fa-solid fa-robot"></i>GPT AI</div>
-        <div class="nav-item"><i class="fa-solid fa-chart-simple"></i>STATS</div>
-    </nav>
-
+    <div class="nav">
+        <div class="nav-i active">🏟️<br>SCAN</div>
+        <div class="nav-i">🧠<br>TIPS</div>
+        <div class="nav-i">📈<br>STATS</div>
+    </div>
     <script>
-        const db = {"2026-03-22": {"Serie A": [{"home": "Como", "away": "Pisa", "h_logo": "https://media.api-sports.io/football/teams/895.png", "a_logo": "https://media.api-sports.io/football/teams/801.png", "score": "5 : 0", "status": "FT"}, {"home": "Atalanta", "away": "Hellas Verona", "h_logo": "https://media.api-sports.io/football/teams/499.png", "a_logo": "https://media.api-sports.io/football/teams/504.png", "score": "1 : 0", "status": "FT"}, {"home": "Bologna", "away": "Lazio", "h_logo": "https://media.api-sports.io/football/teams/500.png", "a_logo": "https://media.api-sports.io/football/teams/487.png", "score": "0 : 2", "status": "FT"}, {"home": "AS Roma", "away": "Lecce", "h_logo": "https://media.api-sports.io/football/teams/497.png", "a_logo": "https://media.api-sports.io/football/teams/867.png", "score": "1 : 0", "status": "FT"}, {"home": "Fiorentina", "away": "Inter", "h_logo": "https://media.api-sports.io/football/teams/502.png", "a_logo": "https://media.api-sports.io/football/teams/505.png", "score": "1 : 1", "status": "FT"}], "Premier League": [{"home": "Newcastle", "away": "Sunderland", "h_logo": "https://media.api-sports.io/football/teams/34.png", "a_logo": "https://media.api-sports.io/football/teams/746.png", "score": "1 : 2", "status": "FT"}, {"home": "Aston Villa", "away": "West Ham", "h_logo": "https://media.api-sports.io/football/teams/66.png", "a_logo": "https://media.api-sports.io/football/teams/48.png", "score": "2 : 0", "status": "FT"}, {"home": "Tottenham", "away": "Nottingham Forest", "h_logo": "https://media.api-sports.io/football/teams/47.png", "a_logo": "https://media.api-sports.io/football/teams/65.png", "score": "0 : 3", "status": "FT"}], "2. Bundesliga": [{"home": "VfL Bochum", "away": "Holstein Kiel", "h_logo": "https://media.api-sports.io/football/teams/176.png", "a_logo": "https://media.api-sports.io/football/teams/191.png", "score": "2 : 3", "status": "FT"}, {"home": "Fortuna D\u00fcsseldorf", "away": "Hertha BSC", "h_logo": "https://media.api-sports.io/football/teams/158.png", "a_logo": "https://media.api-sports.io/football/teams/159.png", "score": "2 : 5", "status": "FT"}, {"home": "Preu\u00dfen M\u00fcnster", "away": "1. FC Magdeburg", "h_logo": "https://media.api-sports.io/football/teams/1313.png", "a_logo": "https://media.api-sports.io/football/teams/179.png", "score": "1 : 3", "status": "FT"}], "La Liga": [{"home": "Barcelona", "away": "Rayo Vallecano", "h_logo": "https://media.api-sports.io/football/teams/529.png", "a_logo": "https://media.api-sports.io/football/teams/728.png", "score": "1 : 0", "status": "FT"}, {"home": "Celta Vigo", "away": "Alaves", "h_logo": "https://media.api-sports.io/football/teams/538.png", "a_logo": "https://media.api-sports.io/football/teams/542.png", "score": "3 : 4", "status": "FT"}, {"home": "Athletic Club", "away": "Real Betis", "h_logo": "https://media.api-sports.io/football/teams/531.png", "a_logo": "https://media.api-sports.io/football/teams/543.png", "score": "2 : 1", "status": "FT"}, {"home": "Real Madrid", "away": "Atletico Madrid", "h_logo": "https://media.api-sports.io/football/teams/541.png", "a_logo": "https://media.api-sports.io/football/teams/530.png", "score": "3 : 2", "status": "FT"}], "Segunda Divisi\u00f3n": [{"home": "Burgos", "away": "Cordoba", "h_logo": "https://media.api-sports.io/football/teams/9580.png", "a_logo": "https://media.api-sports.io/football/teams/713.png", "score": "4 : 0", "status": "FT"}, {"home": "Mirandes", "away": "Valladolid", "h_logo": "https://media.api-sports.io/football/teams/799.png", "a_logo": "https://media.api-sports.io/football/teams/720.png", "score": "2 : 1", "status": "FT"}, {"home": "Real Sociedad II", "away": "Granada CF", "h_logo": "https://media.api-sports.io/football/teams/9585.png", "a_logo": "https://media.api-sports.io/football/teams/715.png", "score": "0 : 2", "status": "FT"}, {"home": "Las Palmas", "away": "Sporting Gijon", "h_logo": "https://media.api-sports.io/football/teams/534.png", "a_logo": "https://media.api-sports.io/football/teams/731.png", "score": "1 : 0", "status": "FT"}], "Ligue 1": [{"home": "Lyon", "away": "Monaco", "h_logo": "https://media.api-sports.io/football/teams/80.png", "a_logo": "https://media.api-sports.io/football/teams/91.png", "score": "1 : 2", "status": "FT"}, {"home": "Marseille", "away": "Lille", "h_logo": "https://media.api-sports.io/football/teams/81.png", "a_logo": "https://media.api-sports.io/football/teams/79.png", "score": "1 : 2", "status": "FT"}, {"home": "Paris FC", "away": "Le Havre", "h_logo": "https://media.api-sports.io/football/teams/114.png", "a_logo": "https://media.api-sports.io/football/teams/111.png", "score": "3 : 2", "status": "FT"}, {"home": "Rennes", "away": "Metz", "h_logo": "https://media.api-sports.io/football/teams/94.png", "a_logo": "https://media.api-sports.io/football/teams/112.png", "score": "0 : 0", "status": "FT"}, {"home": "Nantes", "away": "Strasbourg", "h_logo": "https://media.api-sports.io/football/teams/83.png", "a_logo": "https://media.api-sports.io/football/teams/95.png", "score": "2 : 3", "status": "FT"}], "Serie B": [{"home": "Bari", "away": "Carrarese", "h_logo": "https://media.api-sports.io/football/teams/508.png", "a_logo": "https://media.api-sports.io/football/teams/1581.png", "score": "0 : 3", "status": "FT"}, {"home": "Sudtirol", "away": "Frosinone", "h_logo": "https://media.api-sports.io/football/teams/1578.png", "a_logo": "https://media.api-sports.io/football/teams/512.png", "score": "1 : 3", "status": "FT"}, {"home": "Empoli", "away": "Pescara", "h_logo": "https://media.api-sports.io/football/teams/511.png", "a_logo": "https://media.api-sports.io/football/teams/525.png", "score": "4 : 2", "status": "FT"}, {"home": "Sampdoria", "away": "Avellino", "h_logo": "https://media.api-sports.io/football/teams/498.png", "a_logo": "https://media.api-sports.io/football/teams/528.png", "score": "2 : 1", "status": "FT"}, {"home": "Virtus Entella", "away": "Reggiana", "h_logo": "https://media.api-sports.io/football/teams/527.png", "a_logo": "https://media.api-sports.io/football/teams/880.png", "score": "3 : 0", "status": "FT"}], "Bundesliga": [{"home": "FSV Mainz 05", "away": "Eintracht Frankfurt", "h_logo": "https://media.api-sports.io/football/teams/164.png", "a_logo": "https://media.api-sports.io/football/teams/169.png", "score": "2 : 1", "status": "FT"}, {"home": "FC St. Pauli", "away": "SC Freiburg", "h_logo": "https://media.api-sports.io/football/teams/186.png", "a_logo": "https://media.api-sports.io/football/teams/160.png", "score": "1 : 2", "status": "FT"}, {"home": "FC Augsburg", "away": "VfB Stuttgart", "h_logo": "https://media.api-sports.io/football/teams/170.png", "a_logo": "https://media.api-sports.io/football/teams/172.png", "score": "2 : 5", "status": "FT"}]}, "2026-03-23": {"Segunda Divisi\u00f3n": [{"home": "Castell\u00f3n", "away": "Cultural Leonesa", "h_logo": "https://media.api-sports.io/football/teams/5254.png", "a_logo": "https://media.api-sports.io/football/teams/725.png", "score": "19:30", "status": "NS"}]}, "2026-03-24": {}, "2026-03-25": {}, "2026-03-26": {}}; 
-        let selectedDate = "2026-03-22";
-
-        function openModal(home, away, h_logo, a_logo) {
-            document.getElementById('modal-teams').innerHTML = `
-                <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
-                    <img src="${h_logo}" style="width:50px;">
-                    <span style="font-size:20px; font-weight:bold;">VS</span>
-                    <img src="${a_logo}" style="width:50px;">
-                </div>
-                <h3 style="margin-top:10px;">${home} - ${away}</h3>
-            `;
-            // Tu sa neskôr napojia reálne dáta zo skenera
-            document.getElementById('o15').innerText = "1.25";
-            document.getElementById('o25').innerText = "1.85";
-            document.getElementById('btts').innerText = "Áno";
-            document.getElementById('gpt-text').innerText = "GPT odporúča stávku na Over 1.5. " + home + " má silný útok, zatiaľ čo " + away + " inkasoval v posledných 3 zápasoch.";
-            
-            document.getElementById('statModal').style.display = 'block';
-        }
-
-        function closeModal() { document.getElementById('statModal').style.display = 'none'; }
-
+        const db = JSON.parse('{"2026-03-22": {"Campeonato Brasileiro S\u00e9rie A": [{"home": "S\u00e3o Paulo", "away": "Palmeiras", "h_logo": "https://crests.football-data.org/1776.png", "a_logo": "https://crests.football-data.org/1769.png", "score": "00:00", "p_over15": 76, "p_over25": 78, "p_btts": 61, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Cruzeiro", "away": "Santos", "h_logo": "https://crests.football-data.org/1771.png", "a_logo": "https://crests.football-data.org/6685.png", "score": "19:00", "p_over15": 80, "p_over25": 73, "p_btts": 63, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Clube do Remo", "away": "Bahia", "h_logo": "https://crests.football-data.org/4287.png", "a_logo": "https://crests.football-data.org/1777.png", "score": "19:00", "p_over15": 98, "p_over25": 67, "p_btts": 66, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Paranaense", "away": "Coritiba", "h_logo": "https://crests.football-data.org/1768.png", "a_logo": "https://crests.football-data.org/4241.png", "score": "19:00", "p_over15": 91, "p_over25": 77, "p_btts": 80, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Vasco da Gama", "away": "Gr\u00eamio", "h_logo": "https://crests.football-data.org/1780.png", "a_logo": "https://crests.football-data.org/1767.png", "score": "19:00", "p_over15": 82, "p_over25": 71, "p_btts": 67, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Vit\u00f3ria", "away": "Mirassol", "h_logo": "https://crests.football-data.org/1782.png", "a_logo": "https://crests.football-data.org/4364.png", "score": "21:30", "p_over15": 77, "p_over25": 57, "p_btts": 62, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Internacional", "away": "Chapecoense", "h_logo": "https://crests.football-data.org/6684.png", "a_logo": "https://crests.football-data.org/1772.png", "score": "21:30", "p_over15": 88, "p_over25": 67, "p_btts": 77, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Corinthians", "away": "Flamengo", "h_logo": "https://crests.football-data.org/1779.png", "a_logo": "https://crests.football-data.org/1783.png", "score": "23:30", "p_over15": 98, "p_over25": 81, "p_btts": 51, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Eredivisie": [{"home": "NEC", "away": "Heerenveen", "h_logo": "https://crests.football-data.org/1915.png", "a_logo": "https://crests.football-data.org/673.png", "score": "11:15", "p_over15": 78, "p_over25": 68, "p_btts": 50, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Utrecht", "away": "Go Ahead", "h_logo": "https://crests.football-data.org/676.png", "a_logo": "https://crests.football-data.org/718.png", "score": "13:30", "p_over15": 93, "p_over25": 69, "p_btts": 72, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Feyenoord", "away": "Ajax", "h_logo": "https://crests.football-data.org/675.png", "a_logo": "https://crests.football-data.org/678.png", "score": "13:30", "p_over15": 98, "p_over25": 61, "p_btts": 59, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Telstar", "away": "PSV", "h_logo": "https://crests.football-data.org/1912.png", "a_logo": "https://crests.football-data.org/674.png", "score": "15:45", "p_over15": 91, "p_over25": 68, "p_btts": 60, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Groningen", "away": "AZ", "h_logo": "https://crests.football-data.org/677.png", "a_logo": "https://crests.football-data.org/682.png", "score": "15:45", "p_over15": 95, "p_over25": 56, "p_btts": 61, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Serie A": [{"home": "Como 1907", "away": "AC Pisa", "h_logo": "https://crests.football-data.org/7397.png", "a_logo": "https://crests.football-data.org/487.png", "score": "11:30", "p_over15": 77, "p_over25": 76, "p_btts": 51, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Bologna", "away": "Lazio", "h_logo": "https://crests.football-data.org/103.png", "a_logo": "https://crests.football-data.org/110.png", "score": "14:00", "p_over15": 83, "p_over25": 55, "p_btts": 61, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Atalanta", "away": "Verona", "h_logo": "https://crests.football-data.org/102.png", "a_logo": "https://crests.football-data.org/450.png", "score": "14:00", "p_over15": 77, "p_over25": 73, "p_btts": 54, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Roma", "away": "Lecce", "h_logo": "https://crests.football-data.org/100.png", "a_logo": "https://crests.football-data.org/5890.png", "score": "17:00", "p_over15": 98, "p_over25": 68, "p_btts": 61, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Fiorentina", "away": "Inter", "h_logo": "https://crests.football-data.org/99.png", "a_logo": "https://crests.football-data.org/108.png", "score": "19:45", "p_over15": 81, "p_over25": 68, "p_btts": 51, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Premier League": [{"home": "Newcastle", "away": "Sunderland", "h_logo": "https://crests.football-data.org/67.png", "a_logo": "https://crests.football-data.org/71.png", "score": "12:00", "p_over15": 92, "p_over25": 65, "p_btts": 64, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Aston Villa", "away": "West Ham", "h_logo": "https://crests.football-data.org/58.png", "a_logo": "https://crests.football-data.org/563.png", "score": "14:15", "p_over15": 78, "p_over25": 72, "p_btts": 53, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Tottenham", "away": "Nottingham", "h_logo": "https://crests.football-data.org/73.png", "a_logo": "https://crests.football-data.org/351.png", "score": "14:15", "p_over15": 81, "p_over25": 81, "p_btts": 70, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Primera Division": [{"home": "Bar\u00e7a", "away": "Rayo Vallecano", "h_logo": "https://crests.football-data.org/81.png", "a_logo": "https://crests.football-data.org/87.png", "score": "13:00", "p_over15": 98, "p_over25": 56, "p_btts": 54, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Celta", "away": "Alav\u00e9s", "h_logo": "https://crests.football-data.org/558.png", "a_logo": "https://crests.football-data.org/263.png", "score": "15:15", "p_over15": 96, "p_over25": 81, "p_btts": 75, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Athletic", "away": "Real Betis", "h_logo": "https://crests.football-data.org/77.png", "a_logo": "https://crests.football-data.org/90.png", "score": "17:30", "p_over15": 90, "p_over25": 71, "p_btts": 66, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Real Madrid", "away": "Atleti", "h_logo": "https://crests.football-data.org/86.png", "a_logo": "https://crests.football-data.org/78.png", "score": "20:00", "p_over15": 83, "p_over25": 56, "p_btts": 80, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Ligue 1": [{"home": "Olympique Lyon", "away": "Monaco", "h_logo": "https://crests.football-data.org/523.png", "a_logo": "https://crests.football-data.org/548.png", "score": "14:00", "p_over15": 79, "p_over25": 78, "p_btts": 75, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Paris FC", "away": "Le Havre", "h_logo": "https://crests.football-data.org/1045.png", "a_logo": "https://crests.football-data.org/533.png", "score": "16:15", "p_over15": 94, "p_over25": 65, "p_btts": 79, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Marseille", "away": "Lille", "h_logo": "https://crests.football-data.org/516.png", "a_logo": "https://crests.football-data.org/521.png", "score": "16:15", "p_over15": 88, "p_over25": 68, "p_btts": 55, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Stade Rennais", "away": "FC Metz", "h_logo": "https://crests.football-data.org/529.png", "a_logo": "https://crests.football-data.org/545.png", "score": "16:15", "p_over15": 94, "p_over25": 64, "p_btts": 61, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Nantes", "away": "Strasbourg", "h_logo": "https://crests.football-data.org/543.png", "a_logo": "https://crests.football-data.org/576.png", "score": "19:45", "p_over15": 90, "p_over25": 82, "p_btts": 60, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Bundesliga": [{"home": "Mainz", "away": "Frankfurt", "h_logo": "https://crests.football-data.org/15.png", "a_logo": "https://crests.football-data.org/19.png", "score": "14:30", "p_over15": 78, "p_over25": 56, "p_btts": 62, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "St. Pauli", "away": "Freiburg", "h_logo": "https://crests.football-data.org/20.png", "a_logo": "https://crests.football-data.org/17.png", "score": "16:30", "p_over15": 88, "p_over25": 66, "p_btts": 60, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Augsburg", "away": "Stuttgart", "h_logo": "https://crests.football-data.org/16.png", "a_logo": "https://crests.football-data.org/10.png", "score": "18:30", "p_over15": 93, "p_over25": 84, "p_btts": 50, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}], "Primeira Liga": [{"home": "Estoril Praia", "away": "Rio Ave", "h_logo": "https://crests.football-data.org/582.png", "a_logo": "https://crests.football-data.org/496.png", "score": "15:30", "p_over15": 91, "p_over25": 77, "p_btts": 80, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Alverca", "away": "Sporting CP", "h_logo": "https://crests.football-data.org/7822.png", "a_logo": "https://crests.football-data.org/498.png", "score": "18:00", "p_over15": 83, "p_over25": 62, "p_btts": 75, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}, {"home": "Braga", "away": "Porto", "h_logo": "https://crests.football-data.org/5613.png", "a_logo": "https://crests.football-data.org/503.png", "score": "20:30", "p_over15": 89, "p_over25": 65, "p_btts": 67, "gpt_analiza": "Neural Core predikuje vysok\u00fa aktivitu v kr\u00eddeln\u00fdch priestoroch."}]}}');
+        let curr = '2026-03-23';
         function render() {
-            const nav = document.getElementById('date-nav');
-            const list = document.getElementById('main-list');
-            if(!db) return;
-
-            const dates = Object.keys(db).sort();
-            nav.innerHTML = "";
-            dates.forEach(d => {
-                const item = document.createElement('div');
-                item.className = `date-item ${d === selectedDate ? 'active' : ''}`;
-                item.onclick = () => { selectedDate = d; render(); };
-                item.innerHTML = `<b>${d.split('-')[2]}.${d.split('-')[1]}.</b>`;
-                nav.appendChild(item);
-            });
-
-            list.innerHTML = "";
-            const matches = db[selectedDate];
-            for(const liga in matches) {
-                let html = `<div class="liga-title">${liga}</div>`;
-                matches[liga].forEach(m => {
-                    html += `<div class="match-card" onclick="openModal('${m.home}', '${m.away}', '${m.h_logo}', '${m.a_logo}')">
-                        <div>
-                            <div class="team-row"><img src="${m.h_logo}" class="logo-s">${m.home}</div>
-                            <div class="team-row"><img src="${m.a_logo}" class="logo-s">${m.away}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="color:var(--neon-b); font-weight:bold;">${m.score}</div>
-                            <div style="font-size:9px; opacity:0.5;">${m.status}</div>
-                        </div>
+            const c = document.getElementById('content'); c.innerHTML = '';
+            if(!db[curr]) { c.innerHTML = '<p style="text-align:center; opacity:0.5;">Žiadne zápasy</p>'; return; }
+            for(const l in db[curr]) {
+                c.innerHTML += `<div class="league">${l}</div>`;
+                db[curr][l].forEach(m => {
+                    c.innerHTML += `<div class="card">
+                        <div>${m.home} vs ${m.away}</div>
+                        <div class="score">${m.score}</div>
                     </div>`;
                 });
-                list.innerHTML += html;
             }
         }
-        window.onload = render;
+        const s = document.getElementById('d-scroll');
+        Object.keys(db).sort().forEach(d => {
+            const i = document.createElement('div'); i.className = 'date-item' + (d===curr?' sel':'');
+            i.innerText = d.split('-').reverse().slice(0,2).join('.');
+            i.onclick = () => { curr = d; render(); document.querySelectorAll('.date-item').forEach(x=>x.classList.remove('sel')); i.classList.add('sel'); };
+            s.appendChild(i);
+        });
+        render();
     </script>
 </body>
 </html>
