@@ -1,0 +1,218 @@
+[
+    {
+        "h": "S\u00e3o Paulo",
+        "a": "Palmeiras",
+        "s": "00:00",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "NEC",
+        "a": "Heerenveen",
+        "s": "11:15",
+        "l": "Eredivisie"
+    },
+    {
+        "h": "Como 1907",
+        "a": "AC Pisa",
+        "s": "11:30",
+        "l": "Serie A"
+    },
+    {
+        "h": "Newcastle",
+        "a": "Sunderland",
+        "s": "12:00",
+        "l": "Premier League"
+    },
+    {
+        "h": "Bar\u00e7a",
+        "a": "Rayo Vallecano",
+        "s": "13:00",
+        "l": "Primera Division"
+    },
+    {
+        "h": "Utrecht",
+        "a": "Go Ahead",
+        "s": "13:30",
+        "l": "Eredivisie"
+    },
+    {
+        "h": "Feyenoord",
+        "a": "Ajax",
+        "s": "13:30",
+        "l": "Eredivisie"
+    },
+    {
+        "h": "Olympique Lyon",
+        "a": "Monaco",
+        "s": "14:00",
+        "l": "Ligue 1"
+    },
+    {
+        "h": "Bologna",
+        "a": "Lazio",
+        "s": "14:00",
+        "l": "Serie A"
+    },
+    {
+        "h": "Atalanta",
+        "a": "Verona",
+        "s": "14:00",
+        "l": "Serie A"
+    },
+    {
+        "h": "Aston Villa",
+        "a": "West Ham",
+        "s": "14:15",
+        "l": "Premier League"
+    },
+    {
+        "h": "Tottenham",
+        "a": "Nottingham",
+        "s": "14:15",
+        "l": "Premier League"
+    },
+    {
+        "h": "Mainz",
+        "a": "Frankfurt",
+        "s": "14:30",
+        "l": "Bundesliga"
+    },
+    {
+        "h": "Celta",
+        "a": "Alav\u00e9s",
+        "s": "15:15",
+        "l": "Primera Division"
+    },
+    {
+        "h": "Estoril Praia",
+        "a": "Rio Ave",
+        "s": "15:30",
+        "l": "Primeira Liga"
+    },
+    {
+        "h": "Telstar",
+        "a": "PSV",
+        "s": "15:45",
+        "l": "Eredivisie"
+    },
+    {
+        "h": "Groningen",
+        "a": "AZ",
+        "s": "15:45",
+        "l": "Eredivisie"
+    },
+    {
+        "h": "Paris FC",
+        "a": "Le Havre",
+        "s": "16:15",
+        "l": "Ligue 1"
+    },
+    {
+        "h": "Marseille",
+        "a": "Lille",
+        "s": "16:15",
+        "l": "Ligue 1"
+    },
+    {
+        "h": "Stade Rennais",
+        "a": "FC Metz",
+        "s": "16:15",
+        "l": "Ligue 1"
+    },
+    {
+        "h": "St. Pauli",
+        "a": "Freiburg",
+        "s": "16:30",
+        "l": "Bundesliga"
+    },
+    {
+        "h": "Roma",
+        "a": "Lecce",
+        "s": "17:00",
+        "l": "Serie A"
+    },
+    {
+        "h": "Athletic",
+        "a": "Real Betis",
+        "s": "17:30",
+        "l": "Primera Division"
+    },
+    {
+        "h": "Alverca",
+        "a": "Sporting CP",
+        "s": "18:00",
+        "l": "Primeira Liga"
+    },
+    {
+        "h": "Augsburg",
+        "a": "Stuttgart",
+        "s": "18:30",
+        "l": "Bundesliga"
+    },
+    {
+        "h": "Clube do Remo",
+        "a": "Bahia",
+        "s": "19:00",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Paranaense",
+        "a": "Coritiba",
+        "s": "19:00",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Cruzeiro",
+        "a": "Santos",
+        "s": "19:00",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Vasco da Gama",
+        "a": "Gr\u00eamio",
+        "s": "19:00",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Nantes",
+        "a": "Strasbourg",
+        "s": "19:45",
+        "l": "Ligue 1"
+    },
+    {
+        "h": "Fiorentina",
+        "a": "Inter",
+        "s": "19:45",
+        "l": "Serie A"
+    },
+    {
+        "h": "Real Madrid",
+        "a": "Atleti",
+        "s": "20:00",
+        "l": "Primera Division"
+    },
+    {
+        "h": "Braga",
+        "a": "Porto",
+        "s": "20:30",
+        "l": "Primeira Liga"
+    },
+    {
+        "h": "Internacional",
+        "a": "Chapecoense",
+        "s": "21:30",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Vit\u00f3ria",
+        "a": "Mirassol",
+        "s": "21:30",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    },
+    {
+        "h": "Corinthians",
+        "a": "Flamengo",
+        "s": "23:30",
+        "l": "Campeonato Brasileiro S\u00e9rie A"
+    }
+]
