@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Analytik</title>
     <style>
-        :root { --neon: #00f2ff; --neon-p: #bc13fe; --bg: #02050a; }
+        :root { --neon: #00f2ff; --neon-p: #bc13fe; --green: #39ff14; --orange: #ffd000; --red: #ff3131; --bg: #02050a; }
         
         body { 
             background: var(--bg); color:white; font-family: sans-serif; margin:0; padding-bottom:110px; 
@@ -17,21 +17,23 @@
         .active { display:block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* DATE SCROLLER */
-        .date-scroller { display:flex; gap:10px; overflow-x:auto; padding:10px 0; border-bottom:1px solid #222; }
-        .date-item { padding:10px 15px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:11px; }
-        .date-item.sel { border:1px solid var(--neon); color:var(--neon); }
-        
         /* ZOZNAM ZÁPASOV */
-        .league { color: var(--neon); font-size: 11px; margin: 15px 0 5px; font-weight: bold; }
         .match-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .logo { width:22px; height:22px; vertical-align:middle; margin-right:8px; }
         .score { color:var(--neon); font-weight:bold; font-size:18px; text-shadow: 0 0 5px var(--neon); }
 
-        /* TIKETY & TIPY */
-        .ticket-box { border: 1px solid var(--neon-p); background: rgba(188,19,254,0.03); padding: 15px; border-radius: 15px; }
-        .prem { color: var(--neon-p); font-size: 11px; font-weight: bold; margin-bottom: 5px; }
+        /* DETAIL ZÁPASU (VYSKAKOVACIE OKNO) */
+        .detail-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; overflow-y: auto; padding-bottom: 30px; }
+        .detail-view.active { display: block; }
+        .back-btn { color: var(--neon); padding: 20px; cursor: pointer; display: inline-block; }
         
+        .stat-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px; padding: 0 15px; }
+        .stat-box { background:rgba(255,255,255,0.04); padding:15px; border-radius:15px; text-align:center; border:1px solid #222; }
+        .stat-v { display:block; font-size:22px; font-weight:bold; }
+        .stat-l { font-size: 10px; color: #aaa; margin-top: 5px; }
+
+        .gpt-box { background:rgba(188,19,254,0.05); padding:15px; border-radius:15px; margin:20px 15px 0; font-size:12px; border:1px solid var(--neon-p); line-height:1.5; }
+
         /* NAVIGÁCIA */
         .bottom-nav { position:fixed; bottom:0; width:100%; height:90px; background:rgba(0,0,0,0.9); display:flex; border-top:1px solid #222; }
         .nav-i { flex:1; text-align:center; padding-top:18px; font-size:10px; color:#444; }
@@ -42,64 +44,71 @@
 <body>
     <div id="v-main" class="view active">
         <h2>🏟️ ZÁPASY</h2>
-        <div class="date-scroller" id="d-scroll"></div>
         <div id="content-area"></div>
     </div>
 
-    <div id="v-ticket" class="view">
-        <h2 style="color:var(--neon-p)">🎫 NEURAL TICKETS</h2>
-        <div class="ticket-box">
-            <div class="prem">PREMIUM AKO</div>
-            Zápas A: Góly 2.5+<br>
-            Zápas B: BTTS
-        </div>
-    </div>
-
-    <div id="v-tips" class="view">
-        <h2>🧠 TIPY</h2>
-        <div id="tips-area"></div>
-    </div>
-
-    <div id="v-stats" class="view">
-        <h2>📈 ŠTATISTIKA</h2>
-        <div style="font-size:70px; color:var(--neon); margin-top:40px; text-align:center;">84%</div>
+    <div id="v-detail" class="detail-view">
+        <div class="back-btn" onclick="openMain()">← SPÄŤ</div>
+        <div id="det-content"></div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-i active" onclick="sw('v-main')"><span>🏟️</span>ZÁPASY</div>
-        <div class="nav-i" onclick="sw('v-ticket')"><span>🎫</span>TIKET</div>
-        <div class="nav-i" onclick="sw('v-tips')"><span>🧠</span>TIPY</div>
-        <div class="nav-i" onclick="sw('v-stats')"><span>📈</span>ŠTATISTIKA</div>
+        <div class="nav-i active"><span>🏟️</span>ZÁPASY</div>
     </div>
 
     <script>
-        // Funkcia na prepínanie sekcií
-        function sw(v) {
-            document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-            document.getElementById(v).classList.add('active');
+        // Funkcia na prepnutie späť na zoznam
+        function openMain() {
+            document.getElementById('v-main').classList.add('active');
+            document.getElementById('v-detail').classList.remove('active');
         }
 
-        // Funkcia, ktorá stiahne čisté dáta a zobrazí ich v TOMTO dizajne
+        // Funkcia na načítanie dát
         async function loadData() {
             try {
-                // Robot uloží dáta do data.json, my si ich tu vyzdvihneme
                 const res = await fetch('data.json?v=' + Date.now());
                 const data = await res.json();
                 const area = document.getElementById('content-area');
                 area.innerHTML = '';
                 
-                // Zobrazíme dáta v tvojom dizajne
+                // Zobrazíme dáta a pridáme funkciu kliknutia
                 data.forEach(z => {
-                    area.innerHTML += `
-                        <div class="match-card">
-                            <div>
-                                <img src="${z.h_l}" class="logo">${z.h}<br>
-                                <img src="${z.a_l}" class="logo">${z.a}
-                            </div>
-                            <div class="score">${z.s}</div>
-                        </div>`;
+                    const card = document.createElement('div');
+                    card.className = 'match-card';
+                    // TU SME PRIDALI KLIKNUTIE NA ZÁPAS
+                    card.onclick = () => openDet(z); 
+                    card.innerHTML = `
+                        <div>
+                            <img src="${z.h_l}" class="logo">${z.h}<br>
+                            <img src="${z.a_l}" class="logo">${z.a}
+                        </div>
+                        <div class="score">${z.s}</div>`;
+                    area.appendChild(card);
                 });
             } catch(e) { console.log("Čakám na dáta od robota..."); }
+        }
+
+        // FUNKCIA PRE DETAIL ZÁPASU (Vyskakovacie okno)
+        function openDet(z) {
+            document.getElementById('v-main').classList.remove('active');
+            document.getElementById('v-detail').classList.add('active');
+            
+            const content = document.getElementById('det-content');
+            content.innerHTML = `
+                <div style="text-align:center; margin-top:20px;">
+                    <h3 style="color:var(--neon-p)">${z.h} vs ${z.a}</h3>
+                    <small style="color:#555">${z.liga}</small>
+                </div>
+                
+                <div class="stat-grid">
+                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.p15}%</span><span class="stat-l">Over 1.5</span></div>
+                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.p25}%</span><span class="stat-l">Over 2.5</span></div>
+                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.pbtts}%</span><span class="stat-l">BTTS</span></div>
+                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.pcor}%</span><span class="stat-l">Rohy 7.5+</span></div>
+                    <div class="stat-box" style="grid-column: span 2;"><span class="stat-v" style="color:var(--orange)">${z.pcar}%</span><span class="stat-l">Karty 3.5+</span></div>
+                </div>
+                
+                <div class="gpt-box"><b style="color:var(--neon-p); display:block; margin-bottom:5px;">🤖 GPT ANALÝZA:</b>${z.gpt}</div>`;
         }
 
         // Spustíme načítanie dát
