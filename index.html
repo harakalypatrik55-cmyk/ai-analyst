@@ -5,35 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neural Betting AI</title>
     <style>
-        :root { --neon-b: #00f2ff; --neon-p: #ff00ff; --bg: #05000f; --card-bg: rgba(20, 0, 40, 0.7); }
+        :root { 
+            --neon-b: #00f2ff; 
+            --neon-p: #ff00ff; 
+            --bg: #05000f; 
+            --card-bg: rgba(20, 0, 40, 0.7); 
+        }
+        
         body { 
             background: var(--bg); 
             background-image: linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
             background-size: 30px 30px;
-            color: white; font-family: sans-serif; margin: 0; padding-bottom: 100px; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding-bottom: 100px; 
         }
-        .date-bar { display: flex; overflow-x: auto; padding: 15px 10px; gap: 10px; position: sticky; top: 0; background: var(--bg); z-index: 100; scrollbar-width: none; }
-        .date-item { min-width: 80px; padding: 10px; text-align: center; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
-        .date-item.active { border-color: var(--neon-b); box-shadow: 0 0 10px rgba(0, 242, 255, 0.3); background: rgba(0, 242, 255, 0.1); }
-        .date-item span { display: block; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+
+        /* Horná lišta s dňami */
+        .date-bar { 
+            display: flex; 
+            overflow-x: auto; 
+            padding: 15px 10px; 
+            gap: 10px; 
+            scrollbar-width: none;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+        }
+        .date-item { 
+            min-width: 85px; 
+            padding: 12px 5px; 
+            text-align: center; 
+            border-radius: 12px; 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+        .date-item.active { 
+            background: rgba(0, 242, 255, 0.1); 
+            border-color: var(--neon-b); 
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+        .date-item span { display: block; font-size: 10px; text-transform: uppercase; opacity: 0.6; }
         .date-item b { font-size: 14px; color: var(--neon-b); }
+
+        /* Karty zápasov */
         .container { padding: 0 15px; }
-        .liga-title { color: var(--neon-p); font-size: 11px; font-weight: bold; margin: 20px 0 10px 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .match-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .team-row { display: flex; align-items: center; margin: 4px 0; font-size: 14px; }
-        .logo-s { width: 20px; height: 20px; margin-right: 10px; object-fit: contain; }
-        .score-box { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--neon-b); border-radius: 10px; min-width: 60px; padding: 8px; text-align: center; }
-        .score-val { color: var(--neon-b); font-weight: bold; font-family: monospace; }
-        .status-txt { font-size: 9px; opacity: 0.5; display: block; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(5,0,15,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(0,242,255,0.2); backdrop-filter: blur(5px); }
+        .liga-title { 
+            color: var(--neon-p); 
+            font-size: 11px; 
+            font-weight: bold; 
+            margin: 20px 0 10px 5px; 
+            text-transform: uppercase;
+        }
+        .match-card { 
+            background: var(--card-bg); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 18px; 
+            padding: 15px; 
+            margin-bottom: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .team-row { display: flex; align-items: center; margin: 4px 0; font-size: 15px; }
+        .logo-s { width: 22px; height: 22px; margin-right: 12px; object-fit: contain; background: white; border-radius: 50%; padding: 1px; }
+        
+        .score-box { 
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid var(--neon-b);
+            border-radius: 12px;
+            min-width: 65px;
+            padding: 10px 5px;
+            text-align: center;
+        }
+        .score-val { color: var(--neon-b); font-weight: bold; font-size: 16px; }
+
+        /* Spodná navigácia */
+        .nav-bar { 
+            position: fixed; bottom: 0; width: 100%; height: 80px; 
+            background: rgba(5, 0, 15, 0.95); 
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid rgba(0, 242, 255, 0.2);
+        }
         .nav-item { text-align: center; color: #555; font-size: 10px; }
         .nav-item.active { color: var(--neon-b); }
     </style>
 </head>
 <body>
+
     <div id="date-nav" class="date-bar"></div>
     <div class="container" id="list"></div>
+
     <nav class="nav-bar">
         <div class="nav-item active">ZÁPASY</div>
         <div class="nav-item">TIKET</div>
@@ -42,9 +108,9 @@
     </nav>
 
     <script>
-        // PYTHON TIETO DVA RIADKY NAHRÁDZA - NEMEŇ ICH!
-        const db = {"2026-03-22": {"Serie A": [{"home": "Como", "away": "Pisa", "h_logo": "https://media.api-sports.io/football/teams/895.png", "a_logo": "https://media.api-sports.io/football/teams/801.png", "score": "5 : 0", "status": "FT"}, {"home": "Atalanta", "away": "Hellas Verona", "h_logo": "https://media.api-sports.io/football/teams/499.png", "a_logo": "https://media.api-sports.io/football/teams/504.png", "score": "1 : 0", "status": "FT"}, {"home": "Bologna", "away": "Lazio", "h_logo": "https://media.api-sports.io/football/teams/500.png", "a_logo": "https://media.api-sports.io/football/teams/487.png", "score": "0 : 2", "status": "FT"}, {"home": "AS Roma", "away": "Lecce", "h_logo": "https://media.api-sports.io/football/teams/497.png", "a_logo": "https://media.api-sports.io/football/teams/867.png", "score": "1 : 0", "status": "FT"}, {"home": "Fiorentina", "away": "Inter", "h_logo": "https://media.api-sports.io/football/teams/502.png", "a_logo": "https://media.api-sports.io/football/teams/505.png", "score": "0 : 1", "status": "2H"}], "Premier League": [{"home": "Newcastle", "away": "Sunderland", "h_logo": "https://media.api-sports.io/football/teams/34.png", "a_logo": "https://media.api-sports.io/football/teams/746.png", "score": "1 : 2", "status": "FT"}, {"home": "Aston Villa", "away": "West Ham", "h_logo": "https://media.api-sports.io/football/teams/66.png", "a_logo": "https://media.api-sports.io/football/teams/48.png", "score": "2 : 0", "status": "FT"}, {"home": "Tottenham", "away": "Nottingham Forest", "h_logo": "https://media.api-sports.io/football/teams/47.png", "a_logo": "https://media.api-sports.io/football/teams/65.png", "score": "0 : 3", "status": "FT"}], "2. Bundesliga": [{"home": "VfL Bochum", "away": "Holstein Kiel", "h_logo": "https://media.api-sports.io/football/teams/176.png", "a_logo": "https://media.api-sports.io/football/teams/191.png", "score": "2 : 3", "status": "FT"}, {"home": "Fortuna D\u00fcsseldorf", "away": "Hertha BSC", "h_logo": "https://media.api-sports.io/football/teams/158.png", "a_logo": "https://media.api-sports.io/football/teams/159.png", "score": "2 : 5", "status": "FT"}, {"home": "Preu\u00dfen M\u00fcnster", "away": "1. FC Magdeburg", "h_logo": "https://media.api-sports.io/football/teams/1313.png", "a_logo": "https://media.api-sports.io/football/teams/179.png", "score": "1 : 3", "status": "FT"}], "La Liga": [{"home": "Barcelona", "away": "Rayo Vallecano", "h_logo": "https://media.api-sports.io/football/teams/529.png", "a_logo": "https://media.api-sports.io/football/teams/728.png", "score": "1 : 0", "status": "FT"}, {"home": "Celta Vigo", "away": "Alaves", "h_logo": "https://media.api-sports.io/football/teams/538.png", "a_logo": "https://media.api-sports.io/football/teams/542.png", "score": "3 : 4", "status": "FT"}, {"home": "Athletic Club", "away": "Real Betis", "h_logo": "https://media.api-sports.io/football/teams/531.png", "a_logo": "https://media.api-sports.io/football/teams/543.png", "score": "2 : 1", "status": "FT"}, {"home": "Real Madrid", "away": "Atletico Madrid", "h_logo": "https://media.api-sports.io/football/teams/541.png", "a_logo": "https://media.api-sports.io/football/teams/530.png", "score": "0 : 1", "status": "2H"}], "Segunda Divisi\u00f3n": [{"home": "Burgos", "away": "Cordoba", "h_logo": "https://media.api-sports.io/football/teams/9580.png", "a_logo": "https://media.api-sports.io/football/teams/713.png", "score": "4 : 0", "status": "FT"}, {"home": "Mirandes", "away": "Valladolid", "h_logo": "https://media.api-sports.io/football/teams/799.png", "a_logo": "https://media.api-sports.io/football/teams/720.png", "score": "2 : 1", "status": "FT"}, {"home": "Real Sociedad II", "away": "Granada CF", "h_logo": "https://media.api-sports.io/football/teams/9585.png", "a_logo": "https://media.api-sports.io/football/teams/715.png", "score": "0 : 2", "status": "FT"}, {"home": "Las Palmas", "away": "Sporting Gijon", "h_logo": "https://media.api-sports.io/football/teams/534.png", "a_logo": "https://media.api-sports.io/football/teams/731.png", "score": "1 : 0", "status": "FT"}], "Ligue 1": [{"home": "Lyon", "away": "Monaco", "h_logo": "https://media.api-sports.io/football/teams/80.png", "a_logo": "https://media.api-sports.io/football/teams/91.png", "score": "1 : 2", "status": "FT"}, {"home": "Marseille", "away": "Lille", "h_logo": "https://media.api-sports.io/football/teams/81.png", "a_logo": "https://media.api-sports.io/football/teams/79.png", "score": "1 : 2", "status": "FT"}, {"home": "Paris FC", "away": "Le Havre", "h_logo": "https://media.api-sports.io/football/teams/114.png", "a_logo": "https://media.api-sports.io/football/teams/111.png", "score": "3 : 2", "status": "FT"}, {"home": "Rennes", "away": "Metz", "h_logo": "https://media.api-sports.io/football/teams/94.png", "a_logo": "https://media.api-sports.io/football/teams/112.png", "score": "0 : 0", "status": "FT"}, {"home": "Nantes", "away": "Strasbourg", "h_logo": "https://media.api-sports.io/football/teams/83.png", "a_logo": "https://media.api-sports.io/football/teams/95.png", "score": "2 : 1", "status": "2H"}], "Serie B": [{"home": "Bari", "away": "Carrarese", "h_logo": "https://media.api-sports.io/football/teams/508.png", "a_logo": "https://media.api-sports.io/football/teams/1581.png", "score": "0 : 3", "status": "FT"}, {"home": "Sudtirol", "away": "Frosinone", "h_logo": "https://media.api-sports.io/football/teams/1578.png", "a_logo": "https://media.api-sports.io/football/teams/512.png", "score": "1 : 3", "status": "FT"}, {"home": "Empoli", "away": "Pescara", "h_logo": "https://media.api-sports.io/football/teams/511.png", "a_logo": "https://media.api-sports.io/football/teams/525.png", "score": "4 : 2", "status": "FT"}, {"home": "Sampdoria", "away": "Avellino", "h_logo": "https://media.api-sports.io/football/teams/498.png", "a_logo": "https://media.api-sports.io/football/teams/528.png", "score": "2 : 1", "status": "FT"}, {"home": "Virtus Entella", "away": "Reggiana", "h_logo": "https://media.api-sports.io/football/teams/527.png", "a_logo": "https://media.api-sports.io/football/teams/880.png", "score": "3 : 0", "status": "FT"}], "Bundesliga": [{"home": "FSV Mainz 05", "away": "Eintracht Frankfurt", "h_logo": "https://media.api-sports.io/football/teams/164.png", "a_logo": "https://media.api-sports.io/football/teams/169.png", "score": "2 : 1", "status": "FT"}, {"home": "FC St. Pauli", "away": "SC Freiburg", "h_logo": "https://media.api-sports.io/football/teams/186.png", "a_logo": "https://media.api-sports.io/football/teams/160.png", "score": "1 : 2", "status": "FT"}, {"home": "FC Augsburg", "away": "VfB Stuttgart", "h_logo": "https://media.api-sports.io/football/teams/170.png", "a_logo": "https://media.api-sports.io/football/teams/172.png", "score": "2 : 5", "status": "FT"}]}, "2026-03-23": {"Segunda Divisi\u00f3n": [{"home": "Castell\u00f3n", "away": "Cultural Leonesa", "h_logo": "https://media.api-sports.io/football/teams/5254.png", "a_logo": "https://media.api-sports.io/football/teams/725.png", "score": "19:30", "status": "NS"}]}, "2026-03-24": {}, "2026-03-25": {}, "2026-03-26": {}}; 
-        let selectedDate = "2026-03-22";
+        // Tieto dva riadky musí Python prepísať - NEMEŇ ICH RUČNE!
+        const db = REPLACE_DB; 
+        let selectedDate = "REPLACE_DATE";
 
         function render() {
             const nav = document.getElementById('date-nav');
@@ -71,14 +137,15 @@
             for(const liga in matchesForDay) {
                 let html = `<div class="liga-title">${liga}</div>`;
                 matchesForDay[liga].forEach(m => {
-                    html += `<div class="match-card">
+                    html += `
+                    <div class="match-card">
                         <div>
                             <div class="team-row"><img src="${m.h_logo}" class="logo-s">${m.home}</div>
                             <div class="team-row"><img src="${m.a_logo}" class="logo-s">${m.away}</div>
                         </div>
                         <div class="score-box">
                             <div class="score-val">${m.score}</div>
-                            <span class="status-txt">${m.status}</span>
+                            <span style="font-size:9px; opacity:0.5; display:block;">${m.status}</span>
                         </div>
                     </div>`;
                 });
