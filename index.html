@@ -3,116 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Analytik</title>
     <style>
-        :root { --neon: #00f2ff; --neon-p: #bc13fe; --green: #39ff14; --orange: #ffd000; --red: #ff3131; --bg: #02050a; }
-        
+        :root { --neon-c: #00f2ff; --neon-p: #bc13fe; --bg: #02050a; }
         body { 
-            background: var(--bg); color:white; font-family: sans-serif; margin:0; padding-bottom:110px; 
-            background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px);
-            background-size: 20px 20px;
+            background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 110px;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
+        /* DATE SCROLLER - Tvoj štýl z fotky 21188 */
+        .date-box { display: flex; gap: 10px; padding: 15px; overflow-x: auto; border-bottom: 1px solid #1a1e26; }
+        .date-btn { background: rgba(255,255,255,0.03); border: 1px solid #222; border-radius: 15px; padding: 10px 18px; text-align: center; min-width: 60px; font-size: 11px; }
+        .date-btn.active { border: 2px solid var(--neon-c); box-shadow: 0 0 10px var(--neon-c); }
 
-        .view { display:none; padding:15px; max-width:480px; margin:auto; animation: fadeIn 0.3s; }
-        .active { display:block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* ZOZNAM ZÁPASOV */
-        .match-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; }
-        .logo { width:22px; height:22px; vertical-align:middle; margin-right:8px; }
-        .score { color:var(--neon); font-weight:bold; font-size:18px; text-shadow: 0 0 5px var(--neon); }
+        /* MATCH CARD - Tvoj štýl z fotky 21188 */
+        .match-card { 
+            background: rgba(188, 19, 254, 0.03); border: 1px solid rgba(188, 19, 254, 0.15); 
+            border-radius: 20px; margin: 10px 15px; padding: 18px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .team-row { display: flex; align-items: center; margin: 4px 0; font-weight: 500; }
+        .logo { width: 22px; height: 22px; margin-right: 12px; }
+        .time-badge { background: rgba(0, 242, 255, 0.05); border: 1px solid var(--neon-c); border-radius: 12px; padding: 6px 14px; color: var(--neon-c); font-weight: bold; font-size: 14px; }
 
-        /* DETAIL ZÁPASU (VYSKAKOVACIE OKNO) */
-        .detail-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; overflow-y: auto; padding-bottom: 30px; }
-        .detail-view.active { display: block; }
-        .back-btn { color: var(--neon); padding: 20px; cursor: pointer; display: inline-block; }
-        
-        .stat-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px; padding: 0 15px; }
-        .stat-box { background:rgba(255,255,255,0.04); padding:15px; border-radius:15px; text-align:center; border:1px solid #222; }
-        .stat-v { display:block; font-size:22px; font-weight:bold; }
-        .stat-l { font-size: 10px; color: #aaa; margin-top: 5px; }
+        /* TIKET / TIP - Štýl z fotky 21184 a 21182 */
+        .premium-box { border: 2px solid var(--neon-p); border-radius: 25px; margin: 15px; padding: 25px; background: rgba(188, 19, 254, 0.05); }
+        .tip-badge { background: var(--neon-c); color: black; border-radius: 10px; padding: 4px 12px; font-weight: bold; float: right; }
 
-        .gpt-box { background:rgba(188,19,254,0.05); padding:15px; border-radius:15px; margin:20px 15px 0; font-size:12px; border:1px solid var(--neon-p); line-height:1.5; }
-
-        /* NAVIGÁCIA */
-        .bottom-nav { position:fixed; bottom:0; width:100%; height:90px; background:rgba(0,0,0,0.9); display:flex; border-top:1px solid #222; }
-        .nav-i { flex:1; text-align:center; padding-top:18px; font-size:10px; color:#444; }
-        .nav-i.active { color:var(--neon); }
-        .nav-i span { display:block; font-size:24px; }
+        /* NAVIGÁCIA - Presne podľa fotky 21188 */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: #010307; display: flex; border-top: 1px solid #1a1e26; z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; color: #444; font-size: 10px; padding-top: 15px; cursor: pointer; }
+        .nav-item.active { color: var(--neon-c); }
+        .nav-icon { display: block; font-size: 26px; margin-bottom: 4px; filter: grayscale(1); }
+        .nav-item.active .nav-icon { filter: grayscale(0) drop-shadow(0 0 8px var(--neon-c)); }
     </style>
 </head>
 <body>
-    <div id="v-main" class="view active">
-        <h2>🏟️ ZÁPASY</h2>
-        <div id="content-area"></div>
+    <div id="v-matches" class="view active">
+        <div class="date-box">
+            <div class="date-btn active">Dnes<br><b>22.3.</b></div>
+            <div class="date-btn">Zajtra<br><b>23.3.</b></div>
+            <div class="date-btn">Deň<br><b>24.3.</b></div>
+        </div>
+        <div id="matches-list">
+            </div>
     </div>
 
-    <div id="v-detail" class="detail-view">
-        <div class="back-btn" onclick="openMain()">← SPÄŤ</div>
-        <div id="det-content"></div>
+    <div class="nav">
+        <div class="nav-item active">
+            <span class="nav-icon">🏟️</span>ZÁPASY
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">🎫</span>TIKET
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">💡</span>TIPY
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">📊</span>ŠTATISTIKA
+        </div>
     </div>
-
-    <div class="bottom-nav">
-        <div class="nav-i active"><span>🏟️</span>ZÁPASY</div>
-    </div>
-
-    <script>
-        // Funkcia na prepnutie späť na zoznam
-        function openMain() {
-            document.getElementById('v-main').classList.add('active');
-            document.getElementById('v-detail').classList.remove('active');
-        }
-
-        // Funkcia na načítanie dát
-        async function loadData() {
-            try {
-                const res = await fetch('data.json?v=' + Date.now());
-                const data = await res.json();
-                const area = document.getElementById('content-area');
-                area.innerHTML = '';
-                
-                // Zobrazíme dáta a pridáme funkciu kliknutia
-                data.forEach(z => {
-                    const card = document.createElement('div');
-                    card.className = 'match-card';
-                    // TU SME PRIDALI KLIKNUTIE NA ZÁPAS
-                    card.onclick = () => openDet(z); 
-                    card.innerHTML = `
-                        <div>
-                            <img src="${z.h_l}" class="logo">${z.h}<br>
-                            <img src="${z.a_l}" class="logo">${z.a}
-                        </div>
-                        <div class="score">${z.s}</div>`;
-                    area.appendChild(card);
-                });
-            } catch(e) { console.log("Čakám na dáta od robota..."); }
-        }
-
-        // FUNKCIA PRE DETAIL ZÁPASU (Vyskakovacie okno)
-        function openDet(z) {
-            document.getElementById('v-main').classList.remove('active');
-            document.getElementById('v-detail').classList.add('active');
-            
-            const content = document.getElementById('det-content');
-            content.innerHTML = `
-                <div style="text-align:center; margin-top:20px;">
-                    <h3 style="color:var(--neon-p)">${z.h} vs ${z.a}</h3>
-                    <small style="color:#555">${z.liga}</small>
-                </div>
-                
-                <div class="stat-grid">
-                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.p15}%</span><span class="stat-l">Over 1.5</span></div>
-                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.p25}%</span><span class="stat-l">Over 2.5</span></div>
-                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.pbtts}%</span><span class="stat-l">BTTS</span></div>
-                    <div class="stat-box"><span class="stat-v" style="color:var(--green)">${z.pcor}%</span><span class="stat-l">Rohy 7.5+</span></div>
-                    <div class="stat-box" style="grid-column: span 2;"><span class="stat-v" style="color:var(--orange)">${z.pcar}%</span><span class="stat-l">Karty 3.5+</span></div>
-                </div>
-                
-                <div class="gpt-box"><b style="color:var(--neon-p); display:block; margin-bottom:5px;">🤖 GPT ANALÝZA:</b>${z.gpt}</div>`;
-        }
-
-        // Spustíme načítanie dát
-        loadData();
-    </script>
 </body>
 </html>
